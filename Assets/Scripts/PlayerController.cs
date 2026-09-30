@@ -17,6 +17,7 @@ public class PlayerController : MonoBehaviour
     private float walkSpeed = 5f;
     private float runSpeed = 10f;
     private Vector3 cameraRelativeDirection;
+    private Vector3 velocity;
 
     [Header("Checks")]
     private bool moveRequested;
@@ -41,6 +42,9 @@ public class PlayerController : MonoBehaviour
     {
         Movement();
         Jump();
+        jumpRequested = false; //check full every physics tick, every 0.02 seconds
+
+        return;
     }
 
     void Input()
@@ -79,30 +83,34 @@ public class PlayerController : MonoBehaviour
     void MovementDirection(ref Vector3 playerInput)
     {
         Vector3 forwardDirection = cam.transform.forward * playerInput.z;
-        forwardDirection = forwardDirection.normalized;
+        //forwardDirection = forwardDirection.normalized;
         forwardDirection.y = 0;
 
         Vector3 rightDirection = cam.transform.right * playerInput.x;
-        rightDirection = rightDirection.normalized;
+        //rightDirection = rightDirection.normalized;
         rightDirection.y = 0;
 
-        cameraRelativeDirection = rightDirection + forwardDirection;
+        cameraRelativeDirection = (rightDirection + forwardDirection).normalized;
     }
 
     void Movement()
     {
+        velocity = new Vector3(0, rb.linearVelocity.y, 0);
+        //Debug.Log(rb.linearVelocity);
+
         if (moveRequested == true)
         {
             moveSpeed = walkSpeed;
-            rb.linearVelocity = cameraRelativeDirection * moveSpeed;
+
+            rb.linearVelocity = (cameraRelativeDirection * moveSpeed) + velocity;// cameraRelativeDirection * moveSpeed;
         }
     }
 
     void Jump()
     {
-        if (jumpRequested == true && IsGrounded())
+        if (jumpRequested == true && IsGrounded() && rb.linearVelocity.y == 0)
         {
-            rb.AddForce(Vector3.up * 5.0f, ForceMode.Impulse);
+            rb.AddForce(Vector3.up * 5.0f);
         }
     }
 
@@ -133,10 +141,6 @@ public class PlayerController : MonoBehaviour
         if (keyboardInput.spaceKey.wasPressedThisFrame)
         {
             jumpRequested = true;
-        }
-        else
-        {
-            jumpRequested = false; ;
         }
     }
 

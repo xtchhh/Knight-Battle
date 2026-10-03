@@ -5,7 +5,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class EnemyController : MonoBehaviour
+public class TeamController : MonoBehaviour
 {
     [Header("Combat")]
     public float health = 100f;
@@ -19,8 +19,8 @@ public class EnemyController : MonoBehaviour
     private Vector3 directionToEnemy;
 
     [Header("Enemy Collection")]
-    private TeamController[] enemiesArray;
-    private List <TeamController> enemies;
+    private EnemyController[] enemiesArray;
+    private List <EnemyController> enemies;
 
     [Header("Agent")]
     private NavMeshAgent enemyAgent;
@@ -31,7 +31,7 @@ public class EnemyController : MonoBehaviour
         enemyAgent = GetComponent<NavMeshAgent>();
         enemyAgent.autoBraking = false;
         
-        enemiesArray = FindObjectsByType<TeamController>(FindObjectsSortMode.InstanceID);
+        enemiesArray = FindObjectsByType<EnemyController>(FindObjectsSortMode.InstanceID);
         enemies = enemiesArray.ToList();
     }
 
@@ -43,9 +43,9 @@ public class EnemyController : MonoBehaviour
         Attack();
     }
 
-    private TeamController ClosestEnemy()
+    private EnemyController ClosestEnemy()
     {
-        TeamController enemy = null;
+        EnemyController enemy = null;
         float closest = Mathf.Infinity;
 
         for (int i = 0; i < enemies.Count; i++)
@@ -63,7 +63,7 @@ public class EnemyController : MonoBehaviour
 
     void Move()
     {
-        if (health > 50f)
+        if (health > 40f)
         {
             enemyAgent.speed = walkSpeed;
             enemyAgent.destination = ClosestEnemy().transform.position;
@@ -92,7 +92,7 @@ public class EnemyController : MonoBehaviour
         {
             Debug.Log("Attacking Enemy");
 
-            ClosestEnemy().health -= damage; 
+            ClosestEnemy().health -= damage;
             if (ClosestEnemy().health <= 0)
             {
                 Destroy(ClosestEnemy().gameObject);

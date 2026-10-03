@@ -23,11 +23,22 @@ public class PlayerController : MonoBehaviour
     private bool moveRequested;
     private bool jumpRequested;
 
+    [Header("Combat")]
+    private float distanceToEnemy;
+    private float damage = 20f;
+
+    [Header("Enemy")]
+    private GameObject enemy;
+
+    [Header("Health")]
+    private float health = 100f;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         cam = GetComponentInChildren<Camera>();
+        enemy = GameObject.FindGameObjectWithTag("enemy");
     }
 
     // Update is called once per frame
@@ -37,6 +48,7 @@ public class PlayerController : MonoBehaviour
         JumpCheck();
         MoveCheck();
         PlayerRotation();
+        //Attack();
     }
     void FixedUpdate()
     {
@@ -114,23 +126,27 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    void Attack()
+    {
+        distanceToEnemy = Vector3.Distance(this.transform.position, enemy.transform.position);
+
+        if (distanceToEnemy < 4f && Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            /*
+            enemyy.health -= damage;
+            if (enemyy.health <= 0)
+            {
+                Debug.Log("DEAD");
+            }
+            */
+        }
+    }
+
     void PlayerRotation()
     {
         if (input.sqrMagnitude > 0.1)
         {
             rb.rotation = Quaternion.LookRotation(cameraRelativeDirection);
-        }
-    }
-
-    bool IsGrounded()
-    {
-        if (Physics.Raycast(this.transform.position + (Vector3.up * 0.3f), Vector3.down, 0.4f))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
         }
     }
 
@@ -153,6 +169,18 @@ public class PlayerController : MonoBehaviour
         else
         {
             moveRequested = false;
+        }
+    }
+
+    bool IsGrounded()
+    {
+        if (Physics.Raycast(this.transform.position + (Vector3.up * 0.3f), Vector3.down, 0.4f))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 }

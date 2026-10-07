@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -18,6 +20,9 @@ public class PlayerController : MonoBehaviour
     private float runSpeed = 10f;
     private Vector3 cameraRelativeDirection;
     private Vector3 velocity;
+    private Quaternion lookRot = Quaternion.identity;
+    private Quaternion combatRot;
+    private bool canGiveInput;
 
     [Header("Checks")]
     private bool moveRequested;
@@ -26,9 +31,12 @@ public class PlayerController : MonoBehaviour
     [Header("Combat")]
     private float distanceToEnemy;
     private float damage = 20f;
+    private bool isInCombat = false;
 
     [Header("Enemy")]
-    private GameObject enemy;
+    private EnemyController[] enemiesArray;
+    private List<EnemyController> enemies;
+    private EnemyController enemy = null;
 
     [Header("Health")]
     private float health = 100f;
@@ -38,7 +46,9 @@ public class PlayerController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         cam = GetComponentInChildren<Camera>();
-        enemy = GameObject.FindGameObjectWithTag("enemy");
+        enemiesArray = FindObjectsByType<EnemyController>(FindObjectsSortMode.InstanceID);
+        enemies = enemiesArray.ToList();
+        canGiveInput = true;
     }
 
     // Update is called once per frame
@@ -48,15 +58,37 @@ public class PlayerController : MonoBehaviour
         JumpCheck();
         MoveCheck();
         PlayerRotation();
-        //Attack();
+        Attack();
     }
     void FixedUpdate()
     {
         Movement();
-        Jump();
+        //Jump();
         jumpRequested = false; //check full every physics tick, every 0.02 seconds
 
         return;
+    }
+
+    private EnemyController ClosestEnemy()
+    {
+        float closest = Mathf.Infinity;
+
+        for (int i = 0; i < enemies.Count; i++)
+        {
+            if (enemies[i] == null)
+            {
+                continue;
+            }
+
+            float statcDistanceToEnemy = Vector3.Distance(this.transform.position, enemies[i].transform.position);
+
+            if (distanceToEnemy < closest)
+            {
+                closest = distanceToEnemy;
+                enemy = enemies[i];
+            }
+        }
+        return enemy;
     }
 
     void Input()
@@ -128,25 +160,35 @@ public class PlayerController : MonoBehaviour
 
     void Attack()
     {
-        distanceToEnemy = Vector3.Distance(this.transform.position, enemy.transform.position);
+        distanceToEnemy = Vector3.Distance(this.transform.position, ClosestEnemy().transform.position);
 
-        if (distanceToEnemy < 4f && Mouse.current.leftButton.wasPressedThisFrame)
+        if (distanceToEnemy < 10f && Mouse.current.leftButton.wasPressedThisFrame)
         {
-            /*
-            enemyy.health -= damage;
-            if (enemyy.health <= 0)
-            {
-                Debug.Log("DEAD");
-            }
-            */
+            isInCombat = true;
+            canGiveInput = false;
+        }
+
+        if( Mouse.current.leftButton.wasPressedThisFrame && isInCombat)
+        {
+            canGiveInput = true;
+            isInCombat = false;
         }
     }
 
     void PlayerRotation()
     {
-        if (input.sqrMagnitude > 0.1)
+        Vector3 directionToEnemy = (ClosestEnemy().transform.position - this.transform.position).normalized;
+        Quaternion standardRot = Quaternion.LookRotation(cameraRelativeDirection);
+        Quaternion combatRot = Quaternion.LookRotation(directionToEnemy);
+
+        if (input.sqrMagnitude > 0.1 && canGiveInput)
         {
-            rb.rotation = Quaternion.LookRotation(cameraRelativeDirection);
+            rb.rotation = standardRot;
+        }
+
+        else if (isInCombat)
+        {
+            rb.rotation = combatRot;
         }
     }
 

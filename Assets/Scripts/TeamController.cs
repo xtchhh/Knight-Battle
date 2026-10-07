@@ -32,7 +32,8 @@ public class TeamController : MonoBehaviour
     {
         enemyAgent = gameObject.AddComponent<NavMeshAgent>();
         enemyAgent.autoBraking = false;
-        
+        enemyAgent.updateRotation = false;
+
         enemiesArray = FindObjectsByType<EnemyController>(FindObjectsSortMode.InstanceID);
         enemies = enemiesArray.ToList();
     }
@@ -44,11 +45,8 @@ public class TeamController : MonoBehaviour
         Rotation();
         Attack();
         ClosestEnemy();
-
-        if (health <= 0f)
-        {
-            Destroy(this.gameObject);
-        }
+        SelfDestruct();
+        
 
         Debug.Log(enemies.Count);
     }
@@ -82,7 +80,8 @@ public class TeamController : MonoBehaviour
         if (health > 0f)
         {
             enemyAgent.speed = walkSpeed;
-            enemyAgent.destination = ClosestEnemy().transform.position;
+            enemyAgent.destination = ClosestEnemy().transform.position;//once entire enemy team is deleted from memory, mrc error
+                                                                       //will happen because engine is pointing to objects that dont exist
         }
         /*
         else
@@ -121,6 +120,14 @@ public class TeamController : MonoBehaviour
                 */
                 attackTimer = 0f;
             }
+        }
+    }
+
+    void SelfDestruct()
+    {
+        if (health <= 0f)
+        {
+            Destroy(this.gameObject);
         }
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Random = UnityEngine.Random;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
@@ -21,6 +22,7 @@ public class TeamController : MonoBehaviour
     [Header("Enemy Collection")]
     private EnemyController[] enemiesArray;
     private List <EnemyController> enemies;
+    private EnemyController enemy = null;
 
     [Header("Agent")]
     private NavMeshAgent enemyAgent;
@@ -28,7 +30,7 @@ public class TeamController : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        enemyAgent = GetComponent<NavMeshAgent>();
+        enemyAgent = gameObject.AddComponent<NavMeshAgent>();
         enemyAgent.autoBraking = false;
         
         enemiesArray = FindObjectsByType<EnemyController>(FindObjectsSortMode.InstanceID);
@@ -41,15 +43,27 @@ public class TeamController : MonoBehaviour
         Move();
         Rotation();
         Attack();
+        ClosestEnemy();
+
+        if (health <= 0f)
+        {
+            Destroy(this.gameObject);
+        }
+
+        Debug.Log(enemies.Count);
     }
 
     private EnemyController ClosestEnemy()
     {
-        EnemyController enemy = null;
         float closest = Mathf.Infinity;
 
         for (int i = 0; i < enemies.Count; i++)
         {
+            if (enemies[i] == null)
+            {
+                continue;
+            }
+
             distanceToEnemy = Vector3.Distance(this.transform.position, enemies[i].transform.position);
 
             if (distanceToEnemy < closest)
@@ -63,11 +77,12 @@ public class TeamController : MonoBehaviour
 
     void Move()
     {
-        if (health > 40f)
+        enemyAgent.stoppingDistance = 3f;
+
+        if (health > 0f)
         {
             enemyAgent.speed = walkSpeed;
             enemyAgent.destination = ClosestEnemy().transform.position;
-            enemyAgent.stoppingDistance = 3f;
         }
         /*
         else
@@ -87,17 +102,25 @@ public class TeamController : MonoBehaviour
     void Attack()
     {
         attackTimer += Time.deltaTime;
+        float randomAttackTime = Random.Range(1, 4);
+        float updatedDistanceToEnemy = Vector3.Distance(this.transform.position, ClosestEnemy().transform.position);
 
-        if (attackTimer > 2f && distanceToEnemy < 4f)
+        if (updatedDistanceToEnemy <= 4f)
         {
-            Debug.Log("Attacking Enemy");
-
-            ClosestEnemy().health -= damage;
-            if (ClosestEnemy().health <= 0)
+            if (attackTimer > randomAttackTime)
             {
-                Destroy(ClosestEnemy().gameObject);
+                Debug.Log("Attacking Enemy");
+
+                enemy.health -= damage;
+
+                /*
+                if (enemy.health <= 0)
+                {
+                    Destroy(enemy.gameObject);
+                }
+                */
+                attackTimer = 0f;
             }
-            attackTimer = 0f;
         }
     }
 }

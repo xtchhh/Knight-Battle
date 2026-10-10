@@ -31,12 +31,12 @@ public class PlayerController : MonoBehaviour
     [Header("Combat")]
     private float distanceToEnemy;
     private float damage = 20f;
-    private bool isInCombat = false;
+    private bool isInCombat;
 
     [Header("Enemy")]
     private EnemyController[] enemiesArray;
     private List<EnemyController> enemies;
-    private EnemyController enemy = null;
+    private EnemyController enemy;
 
     [Header("Health")]
     private float health = 100f;
@@ -49,6 +49,7 @@ public class PlayerController : MonoBehaviour
         enemiesArray = FindObjectsByType<EnemyController>(FindObjectsSortMode.InstanceID);
         enemies = enemiesArray.ToList();
         canGiveInput = true;
+        isInCombat = false;
     }
 
     // Update is called once per frame
@@ -72,17 +73,17 @@ public class PlayerController : MonoBehaviour
     private EnemyController ClosestEnemy()
     {
         float closest = Mathf.Infinity;
-
         for (int i = 0; i < enemies.Count; i++)
         {
-            if (enemies[i] == null)
+            if (enemies[i] == null) //continue loop despite missingReferncexception
             {
                 continue;
             }
 
-            float statcDistanceToEnemy = Vector3.Distance(this.transform.position, enemies[i].transform.position);
+            Vector3 staticDistance = (enemies[i].transform.position - this.transform.position).normalized;
+            float dot = Vector3.Dot(cam.transform.forward, staticDistance);
 
-            if (distanceToEnemy < closest)
+            if (dot > 0f)
             {
                 closest = distanceToEnemy;
                 enemy = enemies[i];
@@ -160,6 +161,7 @@ public class PlayerController : MonoBehaviour
 
     void Attack()
     {
+        //directionToEnemy = (ClosestEnemy().transform.position - this.transform.position).normalized;
         distanceToEnemy = Vector3.Distance(this.transform.position, ClosestEnemy().transform.position);
 
         if (distanceToEnemy < 10f && Mouse.current.leftButton.wasPressedThisFrame)
@@ -167,28 +169,28 @@ public class PlayerController : MonoBehaviour
             isInCombat = true;
             canGiveInput = false;
         }
-
-        if( Mouse.current.leftButton.wasPressedThisFrame && isInCombat)
+        
+        if (isInCombat && Mouse.current.rightButton.wasPressedThisFrame)
         {
-            canGiveInput = true;
             isInCombat = false;
+            canGiveInput = true;
         }
     }
 
     void PlayerRotation()
     {
-        Vector3 directionToEnemy = (ClosestEnemy().transform.position - this.transform.position).normalized;
-        Quaternion standardRot = Quaternion.LookRotation(cameraRelativeDirection);
-        Quaternion combatRot = Quaternion.LookRotation(directionToEnemy);
+        Vector3 newDistance = (ClosestEnemy().transform.position - this.transform.position).normalized; // you were using the other distance
+                                                                                                        // variable which didn't include anything
+                                                                                                        // assigning closest enemy
 
-        if (input.sqrMagnitude > 0.1 && canGiveInput)
+        if (input.sqrMagnitude > 0.1f && canGiveInput)
         {
-            rb.rotation = standardRot;
+            rb.rotation = Quaternion.LookRotation(cameraRelativeDirection);
         }
 
-        else if (isInCombat)
+        if (isInCombat)
         {
-            rb.rotation = combatRot;
+            rb.rotation = Quaternion.LookRotation(newDistance);
         }
     }
 

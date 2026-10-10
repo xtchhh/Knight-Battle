@@ -47,9 +47,7 @@ public class EnemyController : MonoBehaviour
         Attack();
         ClosestEnemy();
         SelfDestruct();
-        Debug.Log(enemies);
-
-        
+        //Debug.Log(enemies);
     }
 
     private TeamController ClosestEnemy()
@@ -129,5 +127,4 @@ public class EnemyController : MonoBehaviour
             Destroy(this.gameObject);
         }
     }
-
 }

@@ -48,7 +48,7 @@ public class TeamController : MonoBehaviour
         SelfDestruct();
         
 
-        Debug.Log(enemies.Count);
+        //Debug.Log(enemies.Count);
     }
 
     private EnemyController ClosestEnemy()

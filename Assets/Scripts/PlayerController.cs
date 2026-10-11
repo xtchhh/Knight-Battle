@@ -8,13 +8,11 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-    [Header("Player Components")]
-    private Rigidbody rb;
-
     [Header("Input")]
     private Camera cam;
     private Vector3 input;
     private Keyboard keyboardInput;
+    private bool canGiveInput;
 
     [Header("Movement")]
     public float moveSpeed;
@@ -22,9 +20,7 @@ public class PlayerController : MonoBehaviour
     private float runSpeed = 10f;
     private Vector3 cameraRelativeDirection;
     private Vector3 velocity;
-    private Quaternion lookRot = Quaternion.identity;
-    private Quaternion combatRot;
-    private bool canGiveInput;
+    private Rigidbody rb;
 
     [Header("Checks")]
     private bool moveRequested;
@@ -48,6 +44,7 @@ public class PlayerController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         cam = GetComponentInChildren<Camera>();
+
         enemiesArray = FindObjectsByType<EnemyController>(FindObjectsSortMode.InstanceID);
         enemies = enemiesArray.ToList();
 
@@ -149,7 +146,7 @@ public class PlayerController : MonoBehaviour
         velocity = new Vector3(0, rb.linearVelocity.y, 0);
         //Debug.Log(rb.linearVelocity);
 
-        if (moveRequested == true)
+        if (moveRequested)
         {
             moveSpeed = walkSpeed;
 
@@ -159,7 +156,7 @@ public class PlayerController : MonoBehaviour
 
     void Jump()
     {
-        if (jumpRequested == true && IsGrounded() && rb.linearVelocity.y == 0)
+        if (jumpRequested && IsGrounded() && rb.linearVelocity.y == 0)
         {
             rb.AddForce(Vector3.up * 5.0f);
         }

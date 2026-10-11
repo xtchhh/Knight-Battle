@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -31,7 +33,7 @@ public class PlayerController : MonoBehaviour
     [Header("Combat")]
     private float distanceToEnemy;
     private float damage = 20f;
-    private bool isInCombat;
+    private bool isLocked;
 
     [Header("Enemy")]
     private EnemyController[] enemiesArray;
@@ -48,8 +50,11 @@ public class PlayerController : MonoBehaviour
         cam = GetComponentInChildren<Camera>();
         enemiesArray = FindObjectsByType<EnemyController>(FindObjectsSortMode.InstanceID);
         enemies = enemiesArray.ToList();
+
+        keyboardInput = Keyboard.current;
+
         canGiveInput = true;
-        isInCombat = false;
+        isLocked = false;
     }
 
     // Update is called once per frame
@@ -73,6 +78,7 @@ public class PlayerController : MonoBehaviour
     private EnemyController ClosestEnemy()
     {
         float closest = Mathf.Infinity;
+
         for (int i = 0; i < enemies.Count; i++)
         {
             if (enemies[i] == null) //continue loop despite missingReferncexception
@@ -80,10 +86,11 @@ public class PlayerController : MonoBehaviour
                 continue;
             }
 
-            Vector3 staticDistance = (enemies[i].transform.position - this.transform.position).normalized;
-            float dot = Vector3.Dot(cam.transform.forward, staticDistance);
+            Vector3 staticDirectionToEnemy = (enemies[i].transform.position - this.transform.position).normalized;
 
-            if (dot > 0f)
+            float dot = Vector3.Dot(cam.transform.forward, staticDirectionToEnemy);
+
+            if (dot > 0.5f)
             {
                 closest = distanceToEnemy;
                 enemy = enemies[i];
@@ -94,7 +101,6 @@ public class PlayerController : MonoBehaviour
 
     void Input()
     {
-        keyboardInput = Keyboard.current;
         input = Vector3.zero;
 
         if (keyboardInput.wKey.isPressed)
@@ -161,43 +167,45 @@ public class PlayerController : MonoBehaviour
 
     void Attack()
     {
-        //directionToEnemy = (ClosestEnemy().transform.position - this.transform.position).normalized;
-        distanceToEnemy = Vector3.Distance(this.transform.position, ClosestEnemy().transform.position);
-
-        if (distanceToEnemy < 10f && Mouse.current.leftButton.wasPressedThisFrame)
+        if (keyboardInput.gKey.wasPressedThisFrame && !isLocked)
         {
-            isInCombat = true;
+            isLocked = true;
             canGiveInput = false;
         }
         
-        if (isInCombat && Mouse.current.rightButton.wasPressedThisFrame)
+        else if (keyboardInput.gKey.wasPressedThisFrame && isLocked)
         {
-            isInCombat = false;
+            isLocked = false;
             canGiveInput = true;
         }
     }
 
     void PlayerRotation()
     {
-        Vector3 newDistance = (ClosestEnemy().transform.position - this.transform.position).normalized; // you were using the other distance
-                                                                                                        // variable which didn't include anything
-                                                                                                        // assigning closest enemy
-
-        if (input.sqrMagnitude > 0.1f && canGiveInput)
+        if (input.sqrMagnitude > 0.1f && !isLocked && canGiveInput)
         {
-            rb.rotation = Quaternion.LookRotation(cameraRelativeDirection);
+            rb.rotation = Quaternion.Slerp(this.transform.rotation, Quaternion.LookRotation(cameraRelativeDirection), 20f * Time.deltaTime);
         }
 
-        if (isInCombat)
+        try
         {
-            rb.rotation = Quaternion.LookRotation(newDistance);
+            Vector3 directionToEnemy = (ClosestEnemy().transform.position - this.transform.position).normalized; // variable which didn't include anything you were using the other distance assigning closest enemy
+
+            if (isLocked && !canGiveInput)
+            {
+                rb.rotation = Quaternion.Slerp(this.transform.rotation, Quaternion.LookRotation(directionToEnemy), 20f * Time.deltaTime);
+            }
         }
+        catch (NullReferenceException ex)
+        {
+            Debug.Log($"You are getting this error: {ex}");
+        }          
+
+        
     }
 
     void JumpCheck()
     {
-        keyboardInput = Keyboard.current;
-
         if (keyboardInput.spaceKey.wasPressedThisFrame)
         {
             jumpRequested = true;

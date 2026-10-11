@@ -6,7 +6,7 @@ using System.Net;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerController : MonoBehaviour
+public class Player : TeamController
 {
     [Header("Input")]
     private Camera cam;
@@ -28,16 +28,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Combat")]
     private float distanceToEnemy;
-    private float damage = 20f;
     private bool isLocked;
-
-    [Header("Enemy")]
-    private EnemyController[] enemiesArray;
-    private List<EnemyController> enemies;
-    private EnemyController enemy;
-
-    [Header("Health")]
-    private float health = 100f;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -45,13 +36,12 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         cam = GetComponentInChildren<Camera>();
 
-        enemiesArray = FindObjectsByType<EnemyController>(FindObjectsSortMode.InstanceID);
-        enemies = enemiesArray.ToList();
-
         keyboardInput = Keyboard.current;
 
         canGiveInput = true;
         isLocked = false;
+
+        CacheEnemy();
     }
 
     // Update is called once per frame
@@ -62,6 +52,7 @@ public class PlayerController : MonoBehaviour
         MoveCheck();
         PlayerRotation();
         Attack();
+        SelfDestruct();
     }
     void FixedUpdate()
     {

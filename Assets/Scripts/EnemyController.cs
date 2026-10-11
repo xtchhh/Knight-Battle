@@ -45,7 +45,6 @@ public class EnemyController : MonoBehaviour
         Move();
         Rotation();
         Attack();
-        ClosestEnemy();
         SelfDestruct();
         //Debug.Log(enemies);
     }

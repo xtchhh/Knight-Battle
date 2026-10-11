@@ -1,3 +1,4 @@
+using System.Runtime.Serialization;
 using UnityEngine;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
@@ -15,6 +16,8 @@ public class Skeleton : EnemyController
     [Header("Agent")]
     private NavMeshAgent enemyAgent;
 
+    [Header("Animation")]
+    private Animator animator;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -22,6 +25,8 @@ public class Skeleton : EnemyController
         enemyAgent = gameObject.AddComponent<NavMeshAgent>();
         enemyAgent.autoBraking = false;
         enemyAgent.updateRotation = false;
+
+        animator = GetComponent<Animator>();
 
         CacheEnemy();
     }
@@ -59,26 +64,25 @@ public class Skeleton : EnemyController
 
     void Move()
     {
-        enemyAgent.stoppingDistance = 3f;
-
-        if (health > 0f)
+        //store previous velocity
+        enemyAgent.stoppingDistance = 4f;
+        
+        if (health > 0f && enemyAgent.velocity != Vector3.zero)
         {
+            animator.Play("Skeleton_Rig|Run");
             enemyAgent.speed = walkSpeed;
             enemyAgent.destination = ClosestEnemy().transform.position; //once entire enemy team is deleted from memory, mrc error
                                                                         //will happen because engine is pointing to objects that dont exist
         }
-        /*
-        else
+        else if (enemyAgent.velocity == Vector3.zero)
         {
-            enemyAgent.speed = retreatSpeed;
-            enemyAgent.destination = test.transform.position;
+            animator.Play("Skeleton_Rig|Idle");
         }
-        */
     }
 
     void Rotation()
     {
-        directionToEnemy = (enemy.transform.position - this.transform.position).normalized; // why do i have to subtract from target instead of opposite to create direction?
+        directionToEnemy = (ClosestEnemy().transform.position - this.transform.position).normalized; // why do i have to subtract from target instead of opposite to create direction?
         this.transform.rotation = Quaternion.LookRotation(directionToEnemy);
     }
 

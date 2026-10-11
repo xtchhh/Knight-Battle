@@ -65,8 +65,6 @@ public class Player : TeamController
 
     private EnemyController ClosestEnemy()
     {
-        float closest = Mathf.Infinity;
-
         for (int i = 0; i < enemies.Count; i++)
         {
             if (enemies[i] == null) //continue loop despite missingReferncexception
@@ -80,7 +78,6 @@ public class Player : TeamController
 
             if (dot > 0.5f)
             {
-                closest = distanceToEnemy;
                 enemy = enemies[i];
             }
         }
@@ -188,8 +185,6 @@ public class Player : TeamController
         {
             Debug.Log($"You are getting this error: {ex}");
         }          
-
-        
     }
 
     void JumpCheck()

@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Random = UnityEngine.Random;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.AI;
 
 public class TeamController : MonoBehaviour
 {

@@ -1,5 +1,6 @@
 using System.Linq;
 using UnityEngine;
+using Random = UnityEngine.Random;
 using UnityEngine.AI;
 
 public class Crusader : TeamController

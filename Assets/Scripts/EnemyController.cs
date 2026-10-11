@@ -1,125 +1,29 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
-using UnityEditor.SceneManagement;
 using UnityEngine;
-using Random = UnityEngine.Random;
-using UnityEngine.AI;
 
 public class EnemyController : MonoBehaviour
 {
     [Header("Combat")]
     public float health = 100f;
-    private float damage = 20f;
-    private float attackTimer;
+    protected float damage = 20f;
 
     [Header("Movement")]
-    private float walkSpeed = 4f;
-    private float retreatSpeed = 2f;
-    private float distanceToEnemy;
-    private Vector3 directionToEnemy;
+    protected float walkSpeed = 4f;
+    protected float retreatSpeed = 2f;
 
     [Header("Enemy Collection")]
-    private TeamController[] enemiesArray;
-    private List <TeamController> enemies;
-    private TeamController enemy = null;
+    protected TeamController[] enemiesArray;
+    protected List <TeamController> enemies;
+    protected TeamController enemy = null;
 
-    [Header("Agent")]
-    private NavMeshAgent enemyAgent;
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    protected void CacheEnemy()
     {
-        enemyAgent = gameObject.AddComponent<NavMeshAgent>();
-        enemyAgent.autoBraking = false;
-        enemyAgent.updateRotation = false;
-        
         enemiesArray = FindObjectsByType<TeamController>(FindObjectsSortMode.InstanceID);
         enemies = enemiesArray.ToList();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        Move();
-        Rotation();
-        Attack();
-        SelfDestruct();
-        //Debug.Log(enemies);
-    }
-
-    private TeamController ClosestEnemy()
-    {
-        float closest = Mathf.Infinity;
-
-        for (int i = 0; i < enemies.Count; i++)
-        {
-            if (enemies[i] == null)
-            {
-                continue;
-            }
-
-            distanceToEnemy = Vector3.Distance(this.transform.position, enemies[i].transform.position);
-
-            if (distanceToEnemy < closest)
-            {
-                closest = distanceToEnemy;
-                enemy = enemies[i];
-            }
-        }
-        return enemy;
-    }
-
-    void Move()
-    {
-        enemyAgent.stoppingDistance = 3f;
-
-        if (health > 0f)
-        {
-            enemyAgent.speed = walkSpeed;
-            enemyAgent.destination = ClosestEnemy().transform.position; //once entire enemy team is deleted from memory, mrc error
-                                                                        //will happen because engine is pointing to objects that dont exist
-        }
-        /*
-        else
-        {
-            enemyAgent.speed = retreatSpeed;
-            enemyAgent.destination = test.transform.position;
-        }
-        */
-    }
-
-    void Rotation()
-    {
-        directionToEnemy = (enemy.transform.position - this.transform.position).normalized; // why do i have to subtract from target instead of opposite to create direction?
-        this.transform.rotation = Quaternion.LookRotation(directionToEnemy);
-    }
-
-    void Attack()
-    {
-        attackTimer += Time.deltaTime;
-        float randomAttackTime = Random.Range(1, 4);
-        float updatedDistanceToEnemy = Vector3.Distance(this.transform.position, ClosestEnemy().transform.position);
-
-        if (updatedDistanceToEnemy <= 4f)
-        {
-            if (attackTimer > randomAttackTime)
-            {
-                Debug.Log("Attacking Enemy");
-
-                enemy.health -= damage;
-                /*
-                if (enemy.health <= 0)
-                {
-                    Destroy(ClosestEnemy());
-                }
-                */
-                attackTimer = 0f;
-            } 
-        }
-    }
-    void SelfDestruct()
+    protected void SelfDestruct()
     {
         if (health <= 0f)
         {

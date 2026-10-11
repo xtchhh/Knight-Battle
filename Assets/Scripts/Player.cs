@@ -10,8 +10,8 @@ public class Player : TeamController
 {
     [Header("Input")]
     private Camera cam;
-    private Vector3 input;
     private Keyboard keyboardInput;
+    private Vector3 input;
     private bool canGiveInput;
 
     [Header("Movement")]

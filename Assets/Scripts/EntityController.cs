@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class EntityController : MonoBehaviour
@@ -5,11 +6,15 @@ public class EntityController : MonoBehaviour
     [Header("Entity Health")]
     public float health = 100f;
 
-    protected void SelfDestruct()
+    protected bool IsDead()
     {
         if (health <= 0f)
         {
-            Destroy(this.gameObject);
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 }

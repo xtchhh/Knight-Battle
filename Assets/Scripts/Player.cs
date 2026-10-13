@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -43,6 +44,8 @@ public class Player : TeamController
         animator = GetComponent<Animator>();
 
         keyboardInput = Keyboard.current;
+
+        Cursor.lockState = CursorLockMode.Locked;
 
         canGiveInput = true;
         isLocked = false;
@@ -236,5 +239,20 @@ public class Player : TeamController
         {
             animator.Play("Idle");
         }
+    }
+
+    void SelfDestruct()
+    {
+        if (IsDead())
+        {
+            StartCoroutine("StartDeath");
+        }
+    }
+
+    IEnumerator StartDeath()
+    {
+        yield return new WaitForSeconds(1f);
+
+        Destroy(this.gameObject);
     }
 }

@@ -11,7 +11,7 @@ public class Skeleton : EnemyController
 
     [Header("Movement")]
     private float distanceToEnemy;
-    private Vector3 directionToEnemy;
+    private Vector3 directionToEnemy;   
 
     [Header("Agent")]
     private NavMeshAgent enemyAgent;
@@ -103,13 +103,26 @@ public class Skeleton : EnemyController
 
     void Anims()
     {
-        if (enemyAgent.velocity != Vector3.zero)
+        if (enemyAgent.velocity != Vector3.zero && !IsDead())
         {
             animator.Play("Skeleton_Rig|Run");
         }
-        else if (enemyAgent.velocity == Vector3.zero)
+        else if (enemyAgent.velocity == Vector3.zero && !IsDead())
         {
             animator.Play("Skeleton_Rig|Idle");
+        }
+
+        /*if (IsDead())
+        {
+            animator.Play("Death");
+        }*/
+    }
+
+    void SelfDestruct()
+    {
+        if (IsDead())
+        {
+            Destroy(this.gameObject);
         }
     }
 }

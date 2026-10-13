@@ -116,4 +116,12 @@ public class Crusader : TeamController
             animator.Play("Idle");
         }
     }
+
+    void SelfDestruct()
+    {
+        if (IsDead())
+        {
+            Destroy(this.gameObject);
+        }
+    }
 }

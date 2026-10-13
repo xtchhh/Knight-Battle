@@ -32,13 +32,6 @@ public class Skeleton : EnemyController
     }
 
     // Update is called once per frame
-    void Update()
-    {
-        Move();
-        Rotation();
-        Attack();
-        SelfDestruct();
-    }
 
     private TeamController ClosestEnemy()
     {
@@ -62,22 +55,26 @@ public class Skeleton : EnemyController
         return enemy;
     }
 
+    void Update()
+    {
+        Move();
+        Rotation();
+        Attack();
+        SelfDestruct();
+        Anims();
+    }
+
     void Move()
     {
-        //store previous velocity
-        enemyAgent.stoppingDistance = 4f;
-        
-        if (health > 0f && enemyAgent.velocity != Vector3.zero)
+        enemyAgent.stoppingDistance = 3f;
+
+        if (health > 0f)
         {
-            animator.Play("Skeleton_Rig|Run");
             enemyAgent.speed = walkSpeed;
             enemyAgent.destination = ClosestEnemy().transform.position; //once entire enemy team is deleted from memory, mrc error
                                                                         //will happen because engine is pointing to objects that dont exist
         }
-        else if (enemyAgent.velocity == Vector3.zero)
-        {
-            animator.Play("Skeleton_Rig|Idle");
-        }
+ 
     }
 
     void Rotation()
@@ -96,17 +93,23 @@ public class Skeleton : EnemyController
         {
             if (attackTimer > randomAttackTime)
             {
-                Debug.Log("Attacking Enemy");
+                animator.SetTrigger("isAttacking");
 
-                enemy.health -= damage;
-                /*
-                if (enemy.health <= 0)
-                {
-                    Destroy(ClosestEnemy());
-                }
-                */
+                //enemy.health -= damage;
                 attackTimer = 0f;
             }
+        }
+    }
+
+    void Anims()
+    {
+        if (enemyAgent.velocity != Vector3.zero)
+        {
+            animator.Play("Skeleton_Rig|Run");
+        }
+        else if (enemyAgent.velocity == Vector3.zero)
+        {
+            animator.Play("Skeleton_Rig|Idle");
         }
     }
 }

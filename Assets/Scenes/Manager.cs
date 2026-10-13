@@ -7,8 +7,8 @@ public class Manager : MonoBehaviour
 {
     private EnemyController[] enemyArray;
     private TeamController[] teamArray;
-    List<EnemyController> enemyList;
-    List<TeamController> teamList;
+    public List<EnemyController> enemyList;
+    public List<TeamController> teamList;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -23,27 +23,34 @@ public class Manager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //CheckPlayerCount();
+        CheckPlayerCount();
+        EndGame();
     }
 
     void CheckPlayerCount()
     {
-        //teamList.RemoveAll(null);
-        for (int i = 0; i < teamList.Count; i++)
+        for (int i = teamList.Count - 1; i >= 0; i--)
         {
             if (teamList[i] == null)
             {
-                
-                teamList.Remove(teamList[i]);
+                teamList.RemoveAt(i);
             }
         }
 
-        for (int i = 0; i < enemyList.Count; i++)
+        for (int i = enemyList.Count - 1; i >= 0; i--)
         {
             if (enemyList[i] == null)
             {
-                enemyList.Remove(enemyList[i]);
+                enemyList.RemoveAt(i);
             }
+        }
+    }
+
+    void EndGame()
+    {
+        if (teamList.Count == 0 || enemyList.Count == 0)
+        {
+            Debug.Log("GAME OVER");
         }
     }
 }

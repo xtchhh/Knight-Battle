@@ -16,7 +16,7 @@ public class Player : TeamController
 
     [Header("Movement")]
     public float moveSpeed;
-    private float walkSpeed = 5f;
+    private float walkSpeed = 8f;
     private float runSpeed = 10f;
     private Vector3 cameraRelativeDirection;
     private Vector3 velocity;
@@ -25,16 +25,22 @@ public class Player : TeamController
     [Header("Checks")]
     private bool moveRequested;
     private bool jumpRequested;
+    private bool runRequested;
 
     [Header("Combat")]
     private float distanceToEnemy;
     private bool isLocked;
+
+    [Header("Animations")]
+    private Animator animator;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         cam = GetComponentInChildren<Camera>();
+
+        animator = GetComponent<Animator>();
 
         keyboardInput = Keyboard.current;
 
@@ -48,17 +54,18 @@ public class Player : TeamController
     void Update()
     {
         Input();
-        JumpCheck();
+        //JumpCheck();
         MoveCheck();
         PlayerRotation();
         Attack();
         SelfDestruct();
+        Anims();
     }
     void FixedUpdate()
     {
         Movement();
         //Jump();
-        jumpRequested = false; //check full every physics tick, every 0.02 seconds
+        //jumpRequested = false; //check full every physics tick, every 0.02 seconds
 
         return;
     }
@@ -67,7 +74,7 @@ public class Player : TeamController
     {
         for (int i = 0; i < enemies.Count; i++)
         {
-            if (enemies[i] == null) //continue loop despite missingReferncexception
+            if (enemies[i] == null) //continue loop despite missingReferencException
             {
                 continue;
             }
@@ -108,11 +115,6 @@ public class Player : TeamController
             input += Vector3.right;
         }
 
-        if (keyboardInput.spaceKey.wasPressedThisFrame)
-        {
-            input += Vector3.up;
-        }
-
         MovementDirection(ref input);
     }
 
@@ -134,7 +136,7 @@ public class Player : TeamController
         velocity = new Vector3(0, rb.linearVelocity.y, 0);
         //Debug.Log(rb.linearVelocity);
 
-        if (moveRequested)
+        if (moveRequested && IsGrounded())
         {
             moveSpeed = walkSpeed;
 
@@ -144,7 +146,7 @@ public class Player : TeamController
 
     void Jump()
     {
-        if (jumpRequested && IsGrounded() && rb.linearVelocity.y == 0)
+        if (jumpRequested && IsGrounded())
         {
             rb.AddForce(Vector3.up * 5.0f);
         }
@@ -162,6 +164,11 @@ public class Player : TeamController
         {
             isLocked = false;
             canGiveInput = true;
+        }
+
+        if (Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            animator.SetTrigger("isAttacking");
         }
     }
 
@@ -209,13 +216,25 @@ public class Player : TeamController
 
     bool IsGrounded()
     {
-        if (Physics.Raycast(this.transform.position + (Vector3.up * 0.3f), Vector3.down, 0.4f))
+        if (Physics.Raycast(this.transform.position + (Vector3.up * 0.3f), Vector3.down, 0.5f))
         {
             return true;
         }
         else
         {
             return false;
+        }
+    }
+
+    void Anims()
+    {
+        if (input.sqrMagnitude > 0.1f)
+        {
+            animator.Play("Run");
+        }
+        else
+        {
+            animator.Play("Idle");
         }
     }
 }

@@ -17,12 +17,17 @@ public class Crusader : TeamController
     [Header("Agent")]
     private NavMeshAgent enemyAgent;
 
+    [Header("Animation")]
+    private Animator animator;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         enemyAgent = gameObject.AddComponent<NavMeshAgent>();
         enemyAgent.autoBraking = false;
         enemyAgent.updateRotation = false;
+
+        animator = GetComponent<Animator>();
 
         CacheEnemy();
     }
@@ -56,6 +61,7 @@ public class Crusader : TeamController
         Attack();
         SelfDestruct();
         Rotation();
+        Anims();
     }
 
     void Move()
@@ -93,18 +99,21 @@ public class Crusader : TeamController
         {
             if (attackTimer > randomAttackTime)
             {
-                Debug.Log("Attacking Enemy");
-
-                enemy.health -= damage;
-
-                /*
-                if (enemy.health <= 0)
-                {
-                    Destroy(enemy.gameObject);
-                }
-                */
+                animator.SetTrigger("isAttacking");
                 attackTimer = 0f;
             }
+        }
+    }
+
+    void Anims()
+    {
+        if (enemyAgent.velocity != Vector3.zero)
+        {
+            animator.Play("Run");
+        }
+        else if (enemyAgent.velocity == Vector3.zero)
+        {
+            animator.Play("Idle");
         }
     }
 }

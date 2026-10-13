@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class TeamController : MonoBehaviour
+public class TeamController : EntityController
 {
     [Header("Combat")]
-    public float health = 100f;
     protected float damage = 20f;
    
     [Header("Enemy Collection")]
@@ -18,13 +17,5 @@ public class TeamController : MonoBehaviour
     {
         enemiesArray = FindObjectsByType<EnemyController>(FindObjectsSortMode.InstanceID);
         enemies = enemiesArray.ToList();
-    }
-
-    protected void SelfDestruct()
-    {
-        if (health <= 0f)
-        {
-            Destroy(this.gameObject);
-        }
     }
 }
